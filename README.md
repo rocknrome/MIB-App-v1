@@ -9,3 +9,6 @@ Backend: Postgresql, Kafka, Websocket, Express
 ![Wireframe](<Wireframe v2 reports added.png>)
 
 ![Proposed dataflow architecture](<Proposed Dataflow architecture.png>)
+
+# Trello board
+https://trello.com/b/EAURcWJV
