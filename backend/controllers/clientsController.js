@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { producer } = require('../config/kafka');
 
 exports.getAllClients = async (req, res) => {
   try {
@@ -56,7 +57,18 @@ exports.createClient = async (req, res) => {
         billing_address_same, billing_street_address, billing_city, billing_state, billing_zip
       ]
     );
-    res.json(result.rows[0]);
+
+    const client = result.rows[0];
+    const payloads = [{ topic: 'client_events', messages: JSON.stringify({ event: 'CREATE', data: client }), partition: 0 }];
+    producer.send(payloads, (err, data) => {
+      if (err) {
+        console.error('Failed to send message to Kafka', err);
+      } else {
+        console.log('Message sent to Kafka', data);
+      }
+    });
+
+    res.json(client);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -110,7 +122,18 @@ exports.updateClient = async (req, res) => {
         billing_address_same, billing_street_address, billing_city, billing_state, billing_zip, id
       ]
     );
-    res.json(result.rows[0]);
+
+    const client = result.rows[0];
+    const payloads = [{ topic: 'client_events', messages: JSON.stringify({ event: 'UPDATE', data: client }), partition: 0 }];
+    producer.send(payloads, (err, data) => {
+      if (err) {
+        console.error('Failed to send message to Kafka', err);
+      } else {
+        console.log('Message sent to Kafka', data);
+      }
+    });
+
+    res.json(client);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -120,7 +143,18 @@ exports.updateClient = async (req, res) => {
 exports.deleteClient = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query('DELETE FROM clients WHERE id = $1', [id]);
+    const result = await pool.query('DELETE FROM clients WHERE id = $1 RETURNING *', [id]);
+
+    const client = result.rows[0];
+    const payloads = [{ topic: 'client_events', messages: JSON.stringify({ event: 'DELETE', data: client }), partition: 0 }];
+    producer.send(payloads, (err, data) => {
+      if (err) {
+        console.error('Failed to send message to Kafka', err);
+      } else {
+        console.log('Message sent to Kafka', data);
+      }
+    });
+
     res.sendStatus(204);
   } catch (err) {
     console.error(err);
