@@ -1,5 +1,6 @@
 const { producer } = require('../config/kafka');
 const Plantation = require('../models/Plantation');
+const io = require('../config/io'); // Importing the io instance
 
 // Create a plantation
 const createPlantation = async (req, res) => {
@@ -13,6 +14,9 @@ const createPlantation = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('plantation_created', plantation); // Broadcasting the new plantation to all WebSocket clients
+
     res.status(201).json(plantation);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +64,9 @@ const updatePlantation = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('plantation_updated', updatedPlantation); // Broadcasting the updated plantation to all WebSocket clients
+
     res.status(200).json(updatedPlantation);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,6 +90,9 @@ const deletePlantation = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('plantation_deleted', { id: req.params.id }); // Broadcasting the deleted plantation to all WebSocket clients
+
     res.status(200).json({ message: 'Plantation deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

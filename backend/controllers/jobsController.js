@@ -1,5 +1,6 @@
 const { producer } = require('../config/kafka');
 const Job = require('../models/Job');
+const io = require('../config/io'); // Importing the io instance
 
 // Create a job
 const createJob = async (req, res) => {
@@ -13,6 +14,9 @@ const createJob = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_created', job); // Broadcasting the new job to all WebSocket clients
+
     res.status(201).json(job);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +64,9 @@ const updateJob = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_updated', updatedJob); // Broadcasting the updated job to all WebSocket clients
+
     res.status(200).json(updatedJob);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,6 +90,9 @@ const deleteJob = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_deleted', { id: req.params.id }); // Broadcasting the deleted job to all WebSocket clients
+
     res.status(200).json({ message: 'Job deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

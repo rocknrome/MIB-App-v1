@@ -1,5 +1,6 @@
 const { producer } = require('../config/kafka');
 const TeamAssignment = require('../models/TeamAssignment');
+const io = require('../config/io'); // Importing the io instance
 
 // Create a team assignment
 const createTeamAssignment = async (req, res) => {
@@ -13,6 +14,9 @@ const createTeamAssignment = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_assignment_created', teamAssignment); // Broadcasting the new team assignment to all WebSocket clients
+
     res.status(201).json(teamAssignment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +64,9 @@ const updateTeamAssignment = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_assignment_updated', updatedTeamAssignment); // Broadcasting the updated team assignment to all WebSocket clients
+
     res.status(200).json(updatedTeamAssignment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,6 +90,9 @@ const deleteTeamAssignment = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_assignment_deleted', { id: req.params.id }); // Broadcasting the deleted team assignment to all WebSocket clients
+
     res.status(200).json({ message: 'Team assignment deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

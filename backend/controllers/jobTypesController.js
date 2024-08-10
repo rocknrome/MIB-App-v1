@@ -1,5 +1,6 @@
 const { producer } = require('../config/kafka');
 const JobType = require('../models/JobType');
+const io = require('../config/io'); // Importing the io instance
 
 // Create a job type
 const createJobType = async (req, res) => {
@@ -13,6 +14,9 @@ const createJobType = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_type_created', jobType); // Broadcasting the new job type to all WebSocket clients
+
     res.status(201).json(jobType);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +64,9 @@ const updateJobType = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_type_updated', updatedJobType); // Broadcasting the updated job type to all WebSocket clients
+
     res.status(200).json(updatedJobType);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,6 +90,9 @@ const deleteJobType = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('job_type_deleted', { id: req.params.id }); // Broadcasting the deleted job type to all WebSocket clients
+
     res.status(200).json({ message: 'Job type deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

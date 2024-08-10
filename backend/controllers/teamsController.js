@@ -1,5 +1,6 @@
 const { producer } = require('../config/kafka');
 const Team = require('../models/Team');
+const io = require('../config/io'); // Importing the io instance
 
 // Create a team
 const createTeam = async (req, res) => {
@@ -13,6 +14,9 @@ const createTeam = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_created', team); // Broadcasting the new team to all WebSocket clients
+
     res.status(201).json(team);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +64,9 @@ const updateTeam = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_updated', updatedTeam); // Broadcasting the updated team to all WebSocket clients
+
     res.status(200).json(updatedTeam);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,6 +90,9 @@ const deleteTeam = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('team_deleted', { id: req.params.id }); // Broadcasting the deleted team to all WebSocket clients
+
     res.status(200).json({ message: 'Team deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

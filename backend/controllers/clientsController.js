@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { producer } = require('../config/kafka');
+const io = require('../config/io'); // Importing the io instance
 
 exports.getAllClients = async (req, res) => {
   try {
@@ -68,6 +69,8 @@ exports.createClient = async (req, res) => {
       }
     });
 
+    io.emit('client_created', client); // Broadcasting the new client to all WebSocket clients
+
     res.json(client);
   } catch (err) {
     console.error(err);
@@ -133,6 +136,8 @@ exports.updateClient = async (req, res) => {
       }
     });
 
+    io.emit('client_updated', client); // Broadcasting the updated client to all WebSocket clients
+
     res.json(client);
   } catch (err) {
     console.error(err);
@@ -154,6 +159,8 @@ exports.deleteClient = async (req, res) => {
         console.log('Message sent to Kafka', data);
       }
     });
+
+    io.emit('client_deleted', client); // Broadcasting the deleted client to all WebSocket clients
 
     res.sendStatus(204);
   } catch (err) {
